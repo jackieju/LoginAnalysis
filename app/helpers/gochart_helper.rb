@@ -1,0 +1,2 @@
+module GochartHelper
+end

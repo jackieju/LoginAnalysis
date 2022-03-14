@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+    
+</head>
+<style>
+    #gantt-chart {
+       width: 100rem;
+        height: 140rem;
+    }
+    
+ 
+    .chart {
+        position: relative;
+        display: inline-block;
+        width: 40rem;
+        height: 40rem;
+        vertical-align: top;
+    }
+ 
+    .block {
+        position: absolute;
+        display: inline-block;
+    }
+ 
+    .machine {
+        display: inline-block;
+        width: 8rem;
+        color: gray;
+        font-weight: bold;
+        vertical-align: top;
+ 
+    }
+ 
+    .machine > .label {
+ 
+    }
+ 
+    .legend {
+        width: 8rem;
+        color: gray;
+        font-weight: bold;
+        display: inline-block;
+        vertical-align: top;
+ 
+    }
+ 
+    .legend-block {
+        width: 8rem;
+    }
+ 
+    .color {
+        width: 1rem;
+        height: 1rem;
+        display: inline-block;
+    }
+ 
+    .text {
+        width: 4rem;
+        display: inline-block;
+        color: gray;
+        font-weight: bold;
+    }
+</style>
+<body>
+<div id="gantt-chart">
+    <div class="machine">
+ 
+    </div>
+    <div class="chart">
+ 
+    </div>
+    <div class="legend">
+ 
+    </div>
+    
+    <div id="data">
+    </div>
+</div>
+</body>
+
+<script>
+   // var myArr = [["2012-10-10 03:47:00.0", 23.400000000000002], ["2012-10-10 03:52:00.0", 23.3]];
+
+    //var date = convertDateTime(myArr[0][0]);
+    //console.log(date);
+
+    function convertDateTime(dt){
+        dateTime = dt.split(" ");
+
+        var date = dateTime[0].split("-");
+        var yyyy = date[0];
+        var mm = date[1]-1;
+        var dd = date[2];
+
+        var time = dateTime[1].split(":");
+        var h = time[0];
+        var m = time[1];
+        var s = parseInt(time[2]); //get rid of that 00.0;
+
+        return new Date(yyyy,mm,dd,h,m,s);
+    }
+    
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('gantt-chart'));
+    // 工件编号，工序编号，机器编号，起始时间，终止时间
+  /* const dataSource = [
+     { workpiece: 0, process: 0, machine: "fdf", startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 00:00:00" },
+     { workpiece: 0, process: 1, machine: "fdf", startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 00:00:00" },
+      { workpiece: 0, process: 2, machine: "2", startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 00:00:00" },
+      { workpiece: 1, process: 0, machine: 0, startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 00:00:00" },
+      { workpiece: 1, process: 1, machine: 2, startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 00:00:00" },
+      { workpiece: 1, process: 2, machine: 1, startTime: "2021/10/12 00:00:00", endTime: "2021/10/30 00:00:00" },
+      { workpiece: 2, process: 0, machine: 1, startTime: "2021/10/10 07:00:00", endTime: "2021/10/10 22:00:00" },
+      { workpiece: 2, process: 1, machine: 2, startTime: "2021/10/10 00:00:00", endTime: "2021/10/10 10:00:00" }
+    ];*/
+      g_data = '<%=@data%>';
+      alert(g_data);
+      const dataSource = JSON.parse(g_data);
+    // 一堆颜色集，画每一个图块需要
+    const Colors = [
+        "#BB86D7",
+        "#FFAFF0",
+        "#5BC3EB",
+        "#B5E2FA",
+        "#A9D5C3",
+        "#73DCFF",
+        "#DCB0C6",
+        "#F9CDA5",
+        "#FBE6D2",
+        "#B5E2FA",
+        "#B8FFCE",
+        "#FFE4E2",
+        "#F7AF9D",
+        "#BBF9B4",
+        "#FFEE93",
+        "#2CEAA3",
+        "#ECC2C2",
+        "#C8CACA"
+    ];
+    const { keys } = Object;
+ 
+    // 以机器为纵坐标轴绘制甘特图（这里还可以以工件为坐标轴）
+ 
+    let machines = dataSource.reduce((acc, cur) => {
+        acc[cur.machine] ? acc[cur.machine].push(cur) : acc[cur.machine] = [cur];
+        return acc;
+    }, {}); 
+ 
+    let workpieces = dataSource.reduce((acc, cur) => {
+        acc[cur.workpiece] ? acc[cur.workpiece].push(cur) : acc[cur.workpiece] = [cur];
+        return acc;
+    }, {});
+ 
+    let workpieceColors = {}; // 颜色映射
+    keys(workpieces).forEach((v, i) => workpieceColors[v] = Colors[i]);
+    let data = [];
+    // 关键
+    keys(machines).forEach((k) => {
+        machines[k].forEach(v => {
+          let duration = convertDateTime(v.endTime) - convertDateTime(v.startTime);
+          data.push({
+            name: v.workpiece, // 图块名称
+              value: [k, v.startTime, v.endTime, Math.round(duration/1000/60)], // 名称， 起始时间， 终止时间，持续时间
+            itemStyle: {
+              normal: {
+                color: workpieceColors[v.workpiece] // 图块颜色
+              }
+            }
+          });
+        });
+     });
+ 
+ 
+    function renderItem(params, api) {
+        var categoryIndex = api.value(0);
+        var start = api.coord([api.value(1), categoryIndex]);
+        var end = api.coord([api.value(2), categoryIndex]);
+        var height = api.size([0, 1])[1] * 0.6;
+ 
+        var rectShape = echarts.graphic.clipRectByRect({
+            x: start[0],
+            y: start[1] - height / 2,
+            width: end[0] - start[0],
+            height: height
+        }, {
+            x: params.coordSys.x,
+            y: params.coordSys.y,
+            width: params.coordSys.width,
+            height: params.coordSys.height
+        });
+ 
+        return rectShape && {
+            type: 'rect',
+            shape: rectShape,
+            style: api.style()
+        };
+    }
+ 
+ 
+    option = {
+        tooltip: {
+            formatter: function (params) {
+                return params.marker + params.name + ': ' + params.value[1] + '->'+ params.value[2]+' ' + params.value[3] + ' min';
+            }
+        },
+        title: {
+            text: 'Profile',
+            left: 'center'
+        },
+        grid: {
+            height:300
+        },
+        xAxis: {
+            type: 'time',
+            min: '<%=@min%>',
+            scale: true,
+        },
+        yAxis: {
+            data: keys(machines) // 机器编号为纵坐标轴
+        },
+        series: [{
+            type: 'custom',
+            renderItem: renderItem,
+            itemStyle: {
+                normal: {
+                    opacity: 0.8
+                }
+            },
+            encode: {
+                x: [1, 2],
+                y: 0
+            },
+            data: data
+        }]
+    };
+    myChart.setOption(option);
+</script>
+</html>
