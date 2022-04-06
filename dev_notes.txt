@@ -1,0 +1,16 @@
+
+艰难用echarts模拟甘特图😭，直到我发现了dhtmlxGantt🤩
+https://juejin.cn/post/6844904106042064910 
+
+
+如何用Echart正确的绘制甘特图（适用于React）
+https://blog.csdn.net/daydream13580130043/article/details/98468248 
+
+echarts offical, all type
+https://echarts.apache.org/examples/en/index.html#chart-type-dataset
+
+echarts offical, gantt chart
+https://echarts.apache.org/examples/en/editor.html?c=custom-gantt-flight
+
+others:
+https://www.runoob.com/echarts/echarts-setup.html 
